@@ -1,0 +1,14 @@
+<!doctype html>
+<title>Hello from Flask</title>
+{% if error %}
+  <h1>{{ error }}!</h1>
+{% elif pages %}
+{% for page in pages %}
+<div class=result>
+  <p class=title>{{page.title}}</p>
+  <p class=content>{{page.summary}}</p>
+</div>
+{% endfor %}
+{% else %}
+  <h1>Ooops...</h1>
+{% endif %}

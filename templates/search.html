@@ -2,11 +2,11 @@
 <title>Hello from Flask</title>
 {% if error %}
   <h1>{{ error }}!</h1>
-{% elif pages %}
-{% for page in pages %}
+{% elif results %}
+{% for result in results %}
 <div class=result>
-  <p class=title>{{page.title}}</p>
-  <p class=content>{{page.summary}}</p>
+  <p class=title>{{result[0]}}</p>
+  <p class=content>{{result[1]}}</p>
 </div>
 {% endfor %}
 {% else %}

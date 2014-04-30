@@ -9,10 +9,10 @@ app = Flask(__name__)
 
 @app.route("/")
 def hello():
-    return "Hello World!"
+    return render_template("index.html")
 
-@app.route("/<searchstring>")
-def search(searchstring):
+@app.route("/search")
+def search():
     error = None
     wikisum = False
     limit = 3
@@ -26,7 +26,8 @@ def search(searchstring):
         wikisum = True
 
     try:
-        searchstring = searchstring.replace("_", "%20") #request.args.get("string")
+        #~ searchstring = searchstring.replace("_", "%20") #
+        searchstring = request.args.get("query")
         print searchstring
         titles = wiki.search(searchstring, results = limit);
         # Get the pages with the returned titles

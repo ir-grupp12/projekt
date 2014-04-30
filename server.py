@@ -4,6 +4,7 @@ import re
 import wikipedia as wiki
 from wikipedia.exceptions import WikipediaException, DisambiguationError
 from flask import Flask, request, render_template
+import wikifetcher
 
 app = Flask(__name__)
 
@@ -15,7 +16,7 @@ def hello():
 def search():
     error = None
     wikisum = False
-    limit = 3
+    limit = 20
 
     # Set the search result limit using the limit parameter
     if request.args.has_key("limit"):
@@ -23,39 +24,21 @@ def search():
 
     # If wikisum is defined, use the default wikipedia summary
     if request.args.has_key("wikisum"):
-        wikisum = True
+        wikisum = request.args.get("wikisum") == "on"
 
     try:
-        #~ searchstring = searchstring.replace("_", "%20") #
-        searchstring = request.args.get("query")
-        print searchstring
-        titles = wiki.search(searchstring, results = limit);
-        # Get the pages with the returned titles
-        pages = map(get_page, titles)
+        query = request.args.get("query")
+        results = wikifetcher.fetch(query, limit, wikisum)
 
-    except WikipediaException:
+    except WikipediaException as ex:
+        print ex
         error = "Invalid search parameters"
         return render_template("search.html", error=error)
 
-    results = []
     if not wikisum:
-        results = map(summarize, pages)
-    else:
-        results = [(x.title, x.summary) for x in pages]
+        results = map(summarize, results)   
 
     return render_template("search.html", results=results)
-
-#
-# Takes a wikipedia article title and gets
-# the WikipediaPage object for that page.
-#
-def get_page(name):
-    try:
-        page = wiki.page(title=name.title())
-    except DisambiguationError as e:
-        # Only get the first disambiguation option for now
-        page = wiki.page(title=e.options[0].title())
-    return page
 
 #
 # Takes a WikipediaPage object as parameter and returns

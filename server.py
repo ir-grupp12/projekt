@@ -45,8 +45,8 @@ def search():
 # a tuple of (title, summary)
 #
 def summarize(page):
-    title = page.title
-    summary = re.split(r'\. ', page.content)[0] + ".";
+    title = page[0]
+    summary = re.split(r'\. ', page[1])[0] + ".";
     return (title, summary)
 
 if __name__ == "__main__":

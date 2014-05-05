@@ -95,14 +95,15 @@ def make_tags(content, query):
     return tags
 
 def make_context(content, query):
-    adj_words = 5
+    adj_words = 10
     query_word = query.lower().strip()
     allwords = []
+    content = content.lower()
     for word in stopwords.words("english"): # this is likely ridiculously inefficient
         content = string.replace(content, " "+word+" ", " ") # super ugly
 
     #content = re.sub(' +',' ',content) # remove double spaces
-    content = string.translate(content.lower(), string.punctuation) # remove punctuation
+    content = "".join(l for l in content if l not in string.punctuation) # remove punctuation
     indices = [m.start() for m in re.finditer(query_word, content)] # list of indices where query_word occurs
 
     for i in indices:

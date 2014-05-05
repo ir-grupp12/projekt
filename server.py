@@ -1,13 +1,15 @@
 #!/bin/env python2.7
 
-import re
+import re, string
 import wikipedia as wiki
 from wikipedia.exceptions import WikipediaException, DisambiguationError
 from flask import Flask, request, render_template, json
 import wikifetcher
 import operator
 from nltk.corpus import stopwords
-import string
+from itertools import groupby
+from collections import OrderedDict
+
 
 app = Flask(__name__)
 
@@ -39,13 +41,14 @@ def search():
         return render_template("search.html", error=error)
 
     if not wikisum:
-        results = map(summarize, results)   
+        results = map(summarize, results)
 
     return render_template("search.html", results=results)
-    
+
 @app.route("/wordcloud")
 def wordcloud():
     wikisum = False
+    context = False
     limit = 20
 
     # Set the search result limit using the limit parameter
@@ -56,13 +59,20 @@ def wordcloud():
     if request.args.has_key("wikisum"):
         wikisum = request.args.get("wikisum") == "on"
 
-    query = request.args.get("query")        
+    if request.args.has_key("context"):
+        context = request.args.get("context") == "on"
+
+    query = request.args.get("query")
     results = wikifetcher.fetch(query, limit, wikisum)
-    
+
     content = "".join([content for title, content in results])
-    tags = make_tags(content, query)
+
+    if context:
+        tags = make_context(content, query)
+    else:
+        tags = make_tags(content, query)
     return render_template("wordcloud.html", tags=json.dumps(tags))
-    
+
 def make_tags(content, query):
     query_words = query.lower().strip()
     tags = dict()
@@ -80,11 +90,39 @@ def make_tags(content, query):
     tags = dict()
     for i in xrange(80):
         if i >= len(sorted_tags):
-            break            
+            break
         tags[sorted_tags[i][0]] = sorted_tags[i][1]
-        
-    
     return tags
+
+def make_context(content, query):
+    adj_words = 5
+    query_word = query.lower().strip()
+    allwords = []
+    for word in stopwords.words("english"): # this is likely ridiculously inefficient
+        content = string.replace(content, " "+word+" ", " ") # super ugly
+
+    #content = re.sub(' +',' ',content) # remove double spaces
+    content = string.translate(content.lower(), string.punctuation) # remove punctuation
+    indices = [m.start() for m in re.finditer(query_word, content)] # list of indices where query_word occurs
+
+    for i in indices:
+        #print content[i-30 : i+30+len(query_word)] # prints the 30 characters on each side of the word for debug purposes
+        leftwords  = content[:i].split(" ")[-1-adj_words : -1] # makes list of adjacent words to the left of query_word
+        rightwords = content[i:].split(" ")[1 : 1+adj_words] # makes list of adjacent words to the right of query_word
+        allwords += leftwords+rightwords # add to list of all adjacent words
+
+    allwords.sort()
+    occurences = [len(list(group)) for key, group in groupby(allwords)] # makes list of number of occurences, eg [1,1,3,1,2,4]
+
+    uniquewords = [ key for key,_ in groupby(allwords)] # removes duplicates from a sorted list
+    context_dict = dict(zip(uniquewords, occurences)) # combines occurence list and list of words (without duplicates) into dict
+
+    tempdict = OrderedDict(sorted(context_dict.items(), key=lambda t: t[1])) # sorts dict based on key value
+    sorteddict = tempdict.items()
+    sorteddict.reverse() # reverse sorting order of dict (more occurences = first)
+    OrderedDict(sorteddict)
+
+    return dict(sorteddict[:50]) # how many words to return
 
 #
 # Takes a WikipediaPage object as parameter and returns

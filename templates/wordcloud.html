@@ -23,14 +23,14 @@
 		
 		words = [];
 		for(p in a) {
-			words.push({text: p, size: (a[p] / sum) * 500 });
+			words.push({text: p, size: (a[p] / sum) * 2000 , fill: "#FF0000"});
 		}
 		
 		console.log(words);
 		
 		var fill = d3.scale.category20();
 
-		  d3.layout.cloud().size([300, 300])
+		  d3.layout.cloud().size([1000, 1000])
 			  .words(words)
 			  .padding(5)
 			  .rotate(function() { return ~~(Math.random() * 2) * 90; })
@@ -41,10 +41,10 @@
 
 		  function draw(words) {
 			d3.select("body").append("svg")
-				.attr("width", 300)
-				.attr("height", 300)
+				.attr("width", 1000)
+				.attr("height", 1000)
 			  .append("g")
-				.attr("transform", "translate(150,150)")
+				.attr("transform", "translate(500,500)")
 			  .selectAll("text")
 				.data(words)
 			  .enter().append("text")

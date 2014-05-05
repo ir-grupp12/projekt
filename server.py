@@ -6,6 +6,8 @@ from wikipedia.exceptions import WikipediaException, DisambiguationError
 from flask import Flask, request, render_template, json
 import wikifetcher
 import operator
+from nltk.corpus import stopwords
+import string
 
 app = Flask(__name__)
 
@@ -58,15 +60,17 @@ def wordcloud():
     results = wikifetcher.fetch(query, limit, wikisum)
     
     content = "".join([content for title, content in results])
-    tags = make_tags(content)
+    tags = make_tags(content, query)
     return render_template("wordcloud.html", tags=json.dumps(tags))
     
-def make_tags(content):
-    
+def make_tags(content, query):
+    query_words = query.lower().strip()
     tags = dict()
+    stop = stopwords.words("english")
     for word in content.split(" "):
-        w = word.strip().lower()
-        if w == "":
+        w = word.lower().strip().strip(string.punctuation).strip()
+        w = w.replace("'s", "")
+        if w == "" or w in stop or w in query_words:
             continue
         if w not in tags:
             tags[w] = 0

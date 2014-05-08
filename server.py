@@ -65,26 +65,35 @@ def wordcloud():
     query = request.args.get("query")
     results = wikifetcher.fetch(query, limit, wikisum)
 
-    content = "".join([content for title, content in results])
+    content = [content for title, content in results]
 
     if context:
+        content = "".join([content for title, content in results])
         tags = make_context(content, query)
     else:
         tags = make_tags(content, query)
     return render_template("wordcloud.html", tags=json.dumps(tags))
 
-def make_tags(content, query):
+# params:
+#        docs: an array of documents
+#        query: the search string
+# returns:
+#        tags: a dict of tags and rankings
+def make_tags(docs, query):
     query_words = query.lower().strip()
     tags = dict()
     stop = stopwords.words("english")
-    for word in content.split(" "):
-        w = word.lower().strip().strip(string.punctuation).strip()
-        w = w.replace("'s", "")
-        if w == "" or w in stop or w in query_words:
-            continue
-        if w not in tags:
-            tags[w] = 0
-        tags[w] += 1
+    for doc in docs:
+        words = doc.split(" ")
+        doclength = float(len(words))
+        for word in words:
+            w = word.lower().strip().strip(string.punctuation).strip()
+            w = w.replace("'s", "")
+            if w == "" or w in stop or w in query_words:
+                continue
+            if w not in tags:
+                tags[w] = 0
+            tags[w] += 1/doclength
 
     sorted_tags = sorted(tags.iteritems(), key=operator.itemgetter(1), reverse=True)
     tags = dict()
@@ -139,6 +148,13 @@ def summarize(page):
     title = page[0]
     summary = re.split(r'\. ', page[1])[0] + ".";
     return (title, summary)
+
+def termfreq(doc, term):
+    count = 0
+    for word in doc:
+        if word == term:
+            count = count + 1
+    return count
 
 if __name__ == "__main__":
     app.run(debug=True)

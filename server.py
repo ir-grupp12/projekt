@@ -95,35 +95,41 @@ def make_tags(content, query):
     return tags
 
 def make_context(content, query):
-    adj_words = 10
+    # number of adjacent words on each side to extract
+    NUM_ADJ_WORDS = 10
+    # how much weight to give proximity
+    DISTANCE_WEIGHT = 3.0
+    # specifies length of data to return
+    NUM_WORDS_TO_RETURN = 25
+
     query_word = query.lower().strip()
-    allwords = []
-    content = content.lower()
-    for word in stopwords.words("english"): # this is likely ridiculously inefficient
-        content = string.replace(content, " "+word+" ", " ") # super ugly
+    content = content.lower().replace("'s", "")
+    content = re.sub(' +',' ',content)
+    content = "".join(l for l in content if l not in string.punctuation)
+    allwords = content.split(" ")
 
-    #content = re.sub(' +',' ',content) # remove double spaces
-    content = "".join(l for l in content if l not in string.punctuation) # remove punctuation
-    indices = [m.start() for m in re.finditer(query_word, content)] # list of indices where query_word occurs
+    stop = stopwords.words("english")
+    tags = dict()
 
-    for i in indices:
-        #print content[i-30 : i+30+len(query_word)] # prints the 30 characters on each side of the word for debug purposes
-        leftwords  = content[:i].split(" ")[-1-adj_words : -1] # makes list of adjacent words to the left of query_word
-        rightwords = content[i:].split(" ")[1 : 1+adj_words] # makes list of adjacent words to the right of query_word
-        allwords += leftwords+rightwords # add to list of all adjacent words
+    for i, word in enumerate(allwords):
+        w = word.lower().strip().strip(string.punctuation).strip()
+        if w == query_word:
+            for x in range( 1, NUM_ADJ_WORDS+1 ):
+                w = allwords[i-x] # left of query
+                if w not in stop:
+                    if w in tags:
+                        tags[w] += 1.0/(1.0+(DISTANCE_WEIGHT*x)) # weighting
+                    else:
+                        tags[w] = 1.0
 
-    allwords.sort()
-    occurences = [len(list(group)) for key, group in groupby(allwords)] # makes list of number of occurences, eg [1,1,3,1,2,4]
+                w = allwords[i+x] # right of query
+                if w not in stop:
+                    if w in tags:
+                        tags[w] += 1.0/(1.0+(DISTANCE_WEIGHT*x)) # weighting
+                    else:
+                        tags[w] = 1.0
 
-    uniquewords = [ key for key,_ in groupby(allwords)] # removes duplicates from a sorted list
-    context_dict = dict(zip(uniquewords, occurences)) # combines occurence list and list of words (without duplicates) into dict
-
-    tempdict = OrderedDict(sorted(context_dict.items(), key=lambda t: t[1])) # sorts dict based on key value
-    sorteddict = tempdict.items()
-    sorteddict.reverse() # reverse sorting order of dict (more occurences = first)
-    OrderedDict(sorteddict)
-
-    return dict(sorteddict[:50]) # how many words to return
+    return dict(sorted(tags.iteritems(), key=operator.itemgetter(1), reverse=True)[:NUM_WORDS_TO_RETURN])
 
 #
 # Takes a WikipediaPage object as parameter and returns

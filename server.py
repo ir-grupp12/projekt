@@ -136,7 +136,7 @@ def make_context(docs, query, normalised=False):
                         else:
                             tags[w] = 1.0/(doclength if normalised else 1)
 
-                    w = words[i+x] # right of query
+                    w = words[min(i+x,len(words)-1)] # right of query
                     if w not in stop:
                         if w in tags:
                             tags[w] += 1.0/((1.0+(DISTANCE_WEIGHT*x)) * (doclength if normalised else 1)) # weighting

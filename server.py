@@ -68,10 +68,13 @@ def wordcloud():
     content = [content for title, content in results]
 
     if context:
+        # make_context not converted yet, use old format for content for now
         content = "".join([content for title, content in results])
         tags = make_context(content, query)
     else:
-        tags = make_tags(content, query)
+        tags = make_tags(content, query, normalised=request.args.has_key("norm"))
+        #for tag in tags:
+            #print "'"+tag+"' have ranking " + str(tags[tag])
     return render_template("wordcloud.html", tags=json.dumps(tags))
 
 # params:
@@ -79,7 +82,7 @@ def wordcloud():
 #        query: the search string
 # returns:
 #        tags: a dict of tags and rankings
-def make_tags(docs, query):
+def make_tags(docs, query, normalised=False):
     query_words = query.lower().strip()
     tags = dict()
     stop = stopwords.words("english")
@@ -93,7 +96,7 @@ def make_tags(docs, query):
                 continue
             if w not in tags:
                 tags[w] = 0
-            tags[w] += 1/doclength
+            tags[w] += 1/(doclength if normalised else 1)
 
     sorted_tags = sorted(tags.iteritems(), key=operator.itemgetter(1), reverse=True)
     tags = dict()

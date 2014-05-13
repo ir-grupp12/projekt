@@ -8,12 +8,11 @@ import time
 
 num_worker_threads = 10
 
-def fetch(query, limit=3, wikisum=True):    
+def fetch(query, limit=3):    
     begin = time.time()
     titles = wikipedia.search(query, results = limit);
     
     # Get the pages with the returned titles
-    #~ pages = map(get_page, titles) 
     queue = Queue()
     for i in xrange(len(titles)):
         queue.put((i, titles[i]))
@@ -25,10 +24,7 @@ def fetch(query, limit=3, wikisum=True):
             # Retry 5 times
             for _ in xrange(5): 
                 try:
-                    if wikisum:
-                        results[i] = (meta.title(), wikipedia.summary(meta.title())) #_fetch_page(meta) 
-                    else:
-                        results[i] = (meta.title(), wikipedia.page(meta.title()).content) #_fetch_page(meta) 
+                    results[i] = (meta.title(), wikipedia.page(meta.title()).content) #_fetch_page(meta) 
                     #~ print i, "Done"
                     queue.task_done()
                     break

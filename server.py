@@ -49,7 +49,7 @@ def search():
 def wordcloud():
     wikisum = False
     context = False
-    limit = 20
+    limit = 3
 
     # Set the search result limit using the limit parameter
     if request.args.has_key("limit"):

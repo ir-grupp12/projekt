@@ -18,17 +18,26 @@
 	<div id="debug_output"></div>
 
 	<script type="text/javascript">
+		size = 1200;
 		a = {{ tags|safe }};
 
 		sum = 0;
 		for(p in a) {
 			sum += a[p];
-		}
-		console.log(sum);
-
+		}		
+	
+		//~ Logarithmic sizes.
+		//~ var fontSize = d3.scale.log().range([10, 100]);
+		//~ n
+		//~ var fontSize = d3.scale.linear().range([10, 100]);
+		//~ Old func
+		var fontSize =  function(value) { 
+			return (value / sum) * size*2;
+		};
+		
 		words = [];
 		for(p in a) {
-			words.push({text: p, size: (a[p] / sum) * 2000 , fill: "#FF0000"});
+			words.push({text: p, size: fontSize(a[p]) , fill: "#FF0000"});
 			{% if debug %}
 			var div = document.getElementById("debug_output");
 			var text = document.createElement("p");
@@ -37,18 +46,24 @@
 			{% endif %}
 		}
 
-		console.log(words);
-
-		var color = d3.scale.linear()
+		var greyscale = d3.scale.linear()
 		            .domain([0,1,2,3,4,5,6,10,15,20,100])
 		            .range(["#ddd", "#ccc", "#bbb", "#aaa", "#999", "#888", "#777", "#666", "#555", "#444", "#333", "#222"]);
+		 
+		var randcolor = function(i) {
+			return fill(i);
+		};
+		            
+		 
+		var color = randcolor;
 
 		var fill = d3.scale.category20();
 
-		  d3.layout.cloud().size([1000, 1000])
+		  d3.layout.cloud().size([size, size])
 			  .words(words)
 			  .padding(5)
-			  .rotate(function() { return ( ~~(Math.random() * 3) * 45 ) - 45; })
+			  //~ .rotate(function() { return ( ~~(Math.random() * 3) * 45 ) - 45; })
+			  .rotate(function(d) { return ~~(Math.random() * 5) * 30 - 60; })
 			  .font("Impact")
 			  .fontSize(function(d) { return d.size; })
 			  .on("end", draw)
@@ -56,13 +71,13 @@
 
 		  function draw(words) {
 			d3.select("div#wordcloud").append("svg")
-				.attr("width", 1000)
-				.attr("height", 1000)
-			  .append("g")
-				.attr("transform", "translate(500,500)")
-			  .selectAll("text")
+				.attr("width", size)
+				.attr("height", size)
+				.append("g")
+				.attr("transform", "translate("+size/2+","+size/2+")")
+				.selectAll("text")
 				.data(words)
-			  .enter().append("text")
+				.enter().append("text")
 				.style("font-size", function(d) { return d.size + "px"; })
 				.style("font-family", "Impact")
 				.style("fill", function(d, i) { return color(i); })
@@ -70,8 +85,7 @@
 				.attr("transform", function(d) {
 				  return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
 				})
-				.text(function(d) { return d.text; });
-				console.log("finished");
+				.text(function(d) { return d.text; });				
 		  }
 	</script>
 {% endblock %}

@@ -1,17 +1,15 @@
 body {
-	padding-bottom: 30px;
 	margin: 0;
 	padding: 0;
 }
 
 #main {
-	width: 700px;
+	width: 1200px;
 	margin: 0 auto;
 }
 
 .header {
 	border-bottom: 1px solid #eee;
-	padding: 30px;
 	margin: 0 auto;
 	text-align: center;
 }		
@@ -30,11 +28,12 @@ body {
 }
 
 .inputform {
-	width: 650px;
+	width: 1150px;
 	padding: 25px;
+	text-align: left;
 }
 
 #result {
 	border: 0px;
-	width: 700px;
+	width: 1200px;
 }

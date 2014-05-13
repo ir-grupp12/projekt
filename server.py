@@ -3,7 +3,7 @@
 import re, string
 import wikipedia as wiki
 from wikipedia.exceptions import WikipediaException, DisambiguationError
-from flask import Flask, request, render_template, json
+from flask import Flask, request, render_template, json, jsonify
 import wikifetcher
 import operator
 from nltk.corpus import stopwords
@@ -17,34 +17,6 @@ app = Flask(__name__)
 def hello():
     return render_template("index.html")
 
-@app.route("/search")
-def search():
-    error = None
-    wikisum = False
-    limit = 20
-
-    # Set the search result limit using the limit parameter
-    if request.args.has_key("limit"):
-        limit = request.args.get("limit")
-
-    # If wikisum is defined, use the default wikipedia summary
-    if request.args.has_key("wikisum"):
-        wikisum = request.args.get("wikisum") == "on"
-
-    try:
-        query = request.args.get("query")
-        results = wikifetcher.fetch(query, limit, wikisum)
-
-    except WikipediaException as ex:
-        print ex
-        error = "Invalid search parameters"
-        return render_template("search.html", error=error)
-
-    if not wikisum:
-        results = map(summarize, results)
-
-    return render_template("search.html", results=results)
-
 @app.route("/wordcloud")
 def wordcloud():
     wikisum = False
@@ -55,15 +27,11 @@ def wordcloud():
     if request.args.has_key("limit"):
         limit = request.args.get("limit")
 
-    # If wikisum is defined, use the default wikipedia summary
-    if request.args.has_key("wikisum"):
-        wikisum = request.args.get("wikisum") == "on"
-
     if request.args.has_key("context"):
         context = request.args.get("context") == "on"
 
     query = request.args.get("query")
-    results = wikifetcher.fetch(query, limit, wikisum)
+    results = wikifetcher.fetch(query, limit)
 
     docs = [doc for title, doc in results]
 
@@ -77,6 +45,7 @@ def wordcloud():
             print "'"+tag+"' has score " + str(tags[tag])
 
     return render_template("wordcloud.html", tags=json.dumps(tags), debug=request.args.has_key("debug"))
+    #~ return jsonify(tags)
 
 # params:
 #        docs: an array of documents
@@ -84,6 +53,9 @@ def wordcloud():
 # returns:
 #        tags: a dict of tags and rankings
 def make_tags(docs, query, normalised=False):
+    # specifies length of data to return
+    NUM_WORDS_TO_RETURN = 80
+    
     query_words = query.lower().strip()
     tags = dict()
     stop = stopwords.words("english")
@@ -101,7 +73,7 @@ def make_tags(docs, query, normalised=False):
 
     sorted_tags = sorted(tags.iteritems(), key=operator.itemgetter(1), reverse=True)
     tags = dict()
-    for i in xrange(80):
+    for i in xrange(NUM_WORDS_TO_RETURN):
         if i >= len(sorted_tags):
             break
         tags[sorted_tags[i][0]] = sorted_tags[i][1]
@@ -115,7 +87,7 @@ def make_context(docs, query, normalised=False):
     # how much weight to give proximity
     DISTANCE_WEIGHT = 3.0
     # specifies length of data to return
-    NUM_WORDS_TO_RETURN = 25
+    NUM_WORDS_TO_RETURN = 80
 
     query_word = query.lower().strip()
 

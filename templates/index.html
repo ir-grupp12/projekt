@@ -2,44 +2,48 @@
 <head>
 {% block head %}
 	<title>Wikipedia Wordcloud Search</title>
-	<meta name="viewport" content="width=700, user-scalable=no">
+	<meta name="viewport" content="width=1200, user-scalable=no">
 	<link rel="stylesheet" href="/static/css/pure-min.css">
 	<link rel="stylesheet" href="/static/css/style.css">
 {% endblock %}
 </head>
 <body>
-	{% block results %}
-	{% endblock %}
 	<div id="main">
 		<div class="header">
 			<h1>Wikipedia Wordcloud</h1>
 			<h2>Create wordclouds from wikipedia articles.</h2>
+			
+			<div class="inputform">
+				<form method="GET" action="/wordcloud" class="pure-form">		
+					<fieldset>	
+						<input type="text" name="query" placeholder="Query" size="62">
+						<input type="submit" value="Search" class="pure-button pure-button-primary">
+
+						</br>
+						</br>
+
+						<!-- Checkbox options -->						
+						<label for="context_checkbox" class="pure-checkbox">
+							<input type="checkbox" name="context" id="context_checkbox">
+							Context
+						</label>
+
+						<label for="norm_checkbox" class="pure-checkbox">
+							<input type="checkbox" name="norm" id="norm_checkbox">
+							Normalise
+						</label>						
+					</fieldset>	
+				</form>
+			</div>
 		</div>
-		<div class="inputform">
-			<form method="GET" action="/wordcloud" class="pure-form">		
-				<fieldset>	
-					<input type="text" name="query" placeholder="Query" size="62">
 
-					</br>
-					</br>
-
-                                        <!-- Checkbox options -->
-					<input type="checkbox" name="context" id="context_checkbox">
-					<label for="context_checkbox">Context</label>
-
-					<input type="checkbox" name="norm" id="norm_checkbox">
-					<label for="norm_checkbox">Normalise</label>
-
-					<input type="checkbox" name="debug" id="debug_checkbox">
-					<label for="debug_checkbox">Debug</label></br>
-
-					</br>
-
-					<input type="submit" value="Search" class="pure-button pure-button-primary">
-				</fieldset>	
-			</form>
+		<div id="result">
+		{% block results %}
+		{% endblock %}
 		</div>
 	</div>
+	
+
 
 	{% block footer %}
 	{% endblock %}

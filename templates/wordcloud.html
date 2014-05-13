@@ -12,6 +12,9 @@
 	  <h1>{{ error }}!</h1>
 	{% endif %}
 
+	<div id="wordcloud"></div>
+	<div id="debug_output"></div>
+
 	<script type="text/javascript">
 		a = {{ tags|safe }};
 
@@ -24,6 +27,12 @@
 		words = [];
 		for(p in a) {
 			words.push({text: p, size: (a[p] / sum) * 2000 , fill: "#FF0000"});
+			{% if debug %}
+			var div = document.getElementById("debug_output");
+			var text = document.createElement("p");
+			text.appendChild(document.createTextNode(p + " has score " + a[p]));
+			div.appendChild(text); // + p + " " + a[p] + "</p>");
+			{% endif %}
 		}
 
 		console.log(words);
@@ -44,7 +53,7 @@
 			  .start();
 
 		  function draw(words) {
-			d3.select("body").append("svg")
+			d3.select("div#wordcloud").append("svg")
 				.attr("width", 1000)
 				.attr("height", 1000)
 			  .append("g")

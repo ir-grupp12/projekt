@@ -65,17 +65,18 @@ def wordcloud():
     query = request.args.get("query")
     results = wikifetcher.fetch(query, limit, wikisum)
 
-    content = [content for title, content in results]
+    docs = [doc for title, doc in results]
 
     if context:
-        # make_context not converted yet, use old format for content for now
-        content = "".join([content for title, content in results])
-        tags = make_context(content, query)
+        tags = make_context(docs, query, normalised=request.args.has_key("norm"))
     else:
-        tags = make_tags(content, query, normalised=request.args.has_key("norm"))
-        #for tag in tags:
-            #print "'"+tag+"' have ranking " + str(tags[tag])
-    return render_template("wordcloud.html", tags=json.dumps(tags))
+        tags = make_tags(docs, query, normalised=request.args.has_key("norm"))
+
+    if request.args.has_key("debug"):
+        for tag in tags:
+            print "'"+tag+"' has score " + str(tags[tag])
+
+    return render_template("wordcloud.html", tags=json.dumps(tags), debug=request.args.has_key("debug"))
 
 # params:
 #        docs: an array of documents
@@ -87,7 +88,7 @@ def make_tags(docs, query, normalised=False):
     tags = dict()
     stop = stopwords.words("english")
     for doc in docs:
-        words = doc.split(" ")
+        words = wordify(doc)
         doclength = float(len(words))
         for word in words:
             w = word.lower().strip().strip(string.punctuation).strip()
@@ -106,7 +107,7 @@ def make_tags(docs, query, normalised=False):
         tags[sorted_tags[i][0]] = sorted_tags[i][1]
     return tags
 
-def make_context(content, query):
+def make_context(docs, query, normalised=False):
     # number of adjacent words on each side to extract
     NUM_ADJ_WORDS = 10
     # how much weight to give proximity
@@ -115,33 +116,43 @@ def make_context(content, query):
     NUM_WORDS_TO_RETURN = 25
 
     query_word = query.lower().strip()
-    content = content.lower().replace("'s", "")
-    content = re.sub(' +',' ',content)
-    content = "".join(l for l in content if l not in string.punctuation)
-    allwords = content.split(" ")
 
     stop = stopwords.words("english")
     tags = dict()
 
-    for i, word in enumerate(allwords):
-        w = word.lower().strip().strip(string.punctuation).strip()
-        if w == query_word:
-            for x in range( 1, NUM_ADJ_WORDS+1 ):
-                w = allwords[i-x] # left of query
-                if w not in stop:
-                    if w in tags:
-                        tags[w] += 1.0/(1.0+(DISTANCE_WEIGHT*x)) # weighting
-                    else:
-                        tags[w] = 1.0
+    for doc in docs:
 
-                w = allwords[i+x] # right of query
-                if w not in stop:
-                    if w in tags:
-                        tags[w] += 1.0/(1.0+(DISTANCE_WEIGHT*x)) # weighting
-                    else:
-                        tags[w] = 1.0
+        words = wordify(doc)
+        doclength = float(len(words))
+
+        for i, word in enumerate(words):
+            w = word.lower().strip().strip(string.punctuation).strip()
+            if w == query_word:
+                for x in range( 1, NUM_ADJ_WORDS+1 ):
+                    w = words[i-x] # left of query
+                    if w not in stop:
+                        if w in tags:
+                            tags[w] += 1.0/((1.0+(DISTANCE_WEIGHT*x)) * (doclength if normalised else 1)) # weighting
+                        else:
+                            tags[w] = 1.0/(doclength if normalised else 1)
+
+                    w = words[i+x] # right of query
+                    if w not in stop:
+                        if w in tags:
+                            tags[w] += 1.0/((1.0+(DISTANCE_WEIGHT*x)) * (doclength if normalised else 1)) # weighting
+                        else:
+                            tags[w] = 1.0/(doclength if normalised else 1)
 
     return dict(sorted(tags.iteritems(), key=operator.itemgetter(1), reverse=True)[:NUM_WORDS_TO_RETURN])
+
+#
+# Takes a document and returns an array of the words
+#
+def wordify(doc):
+        doc = doc.lower().replace("'s", "")
+        doc = re.sub(' +',' ',doc)
+        doc = "".join(l for l in doc if l not in string.punctuation)
+        return doc.split(" ")
 
 #
 # Takes a WikipediaPage object as parameter and returns

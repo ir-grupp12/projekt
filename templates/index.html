@@ -1,15 +1,23 @@
-<!doctype html>
+<!DOCTYPE HTML>
 <head>
-<title>Wikipedia Search</title>
+	<title>Wikipedia Wordcloud Search</title>
+	<meta name="viewport" content="width=700, user-scalable=no">
+	<link rel="stylesheet" href="/static/css/pure-min.css">
+	<link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-<form method="GET" action="/search">
-	<fieldset>
-		<label for="query">Query:</label>
-		<input type="text" name="query">
-		<label for="wikisum">Use wikipedia summary:</label>
-		<input type="checkbox" name="wikisum">
-		<input type="submit" value="Search">
-	</fieldset>	
-</form>
+	<div id="main">
+		<div class="header">
+			<h1>Wikipedia Wordcloud</h1>
+			<h2>Create wordclouds from wikipedia articles.</h2>
+		</div>
+		<div class="inputform">
+			<form method="GET" action="/wordcloud" class="pure-form">		
+				<fieldset>	
+					<input type="text" name="query" placeholder="Query" size="62">
+					<input type="submit" value="Search" class="pure-button pure-button-primary">
+				</fieldset>	
+			</form>
+		</div>
+	</div>
 </body>

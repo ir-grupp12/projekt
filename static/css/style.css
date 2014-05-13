@@ -1,0 +1,40 @@
+body {
+	padding-bottom: 30px;
+	margin: 0;
+	padding: 0;
+}
+
+#main {
+	width: 700px;
+	margin: 0 auto;
+}
+
+.header {
+	border-bottom: 1px solid #eee;
+	padding: 30px;
+	margin: 0 auto;
+	text-align: center;
+}		
+	
+.header h1 {
+	font-weight: bold;
+	color: rgb(75, 75, 75);	
+}
+
+.header h2 {
+	font-size: 125%;
+	font-weight: 100;
+	line-height: 1.5;
+	margin: 0;
+	color: #666;
+}
+
+.inputform {
+	width: 650px;
+	padding: 25px;
+}
+
+#result {
+	border: 0px;
+	width: 700px;
+}

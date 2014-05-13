@@ -1,11 +1,15 @@
 <!DOCTYPE HTML>
 <head>
+{% block head %}
 	<title>Wikipedia Wordcloud Search</title>
 	<meta name="viewport" content="width=700, user-scalable=no">
 	<link rel="stylesheet" href="/static/css/pure-min.css">
 	<link rel="stylesheet" href="/static/css/style.css">
+{% endblock %}
 </head>
 <body>
+	{% block results %}
+	{% endblock %}
 	<div id="main">
 		<div class="header">
 			<h1>Wikipedia Wordcloud</h1>
@@ -15,9 +19,47 @@
 			<form method="GET" action="/wordcloud" class="pure-form">		
 				<fieldset>	
 					<input type="text" name="query" placeholder="Query" size="62">
+
+					</br>
+					</br>
+
+                                        <!-- Checkbox options -->
+					<input type="checkbox" name="context" id="context_checkbox">
+					<label for="context_checkbox">Context</label>
+
+					<input type="checkbox" name="norm" id="norm_checkbox">
+					<label for="norm_checkbox">Normalise</label>
+
+					<input type="checkbox" name="debug" id="debug_checkbox">
+					<label for="debug_checkbox">Debug</label></br>
+
+					</br>
+
 					<input type="submit" value="Search" class="pure-button pure-button-primary">
 				</fieldset>	
 			</form>
 		</div>
 	</div>
+
+	{% block footer %}
+	{% endblock %}
+	<script type="text/javascript">
+	// Populate form with url parameters
+	var params = window.location.search.substring(1);
+	params = params.split("&");
+
+	for(p in params) {
+		var param = params[p].split("=");
+		var key = param[0];
+		var val = param[1];
+		var input = document.getElementsByName(key);
+		if(input != null && input.length < 2 && input[0].nodeName == "INPUT") {
+			if(input[0].type == "checkbox")
+				input[0].checked = true;
+			if(input[0].type == "text")
+				input[0].value = val;
+		}
+	}
+
+	</script>
 </body>

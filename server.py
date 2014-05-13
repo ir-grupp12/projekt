@@ -106,6 +106,8 @@ def make_tags(docs, query, normalised=False):
             break
         tags[sorted_tags[i][0]] = sorted_tags[i][1]
     return tags
+    
+
 
 def make_context(docs, query, normalised=False):
     # number of adjacent words on each side to extract
@@ -119,29 +121,36 @@ def make_context(docs, query, normalised=False):
 
     stop = stopwords.words("english")
     tags = dict()
-
+    
+    def _update_distance(words):
+        distance = 0
+        for w in words: 
+            distance += 1           
+            if w in stop:
+                continue
+                
+            if w not in tags: #initialize (because of lookahead)
+                tags[w] = 1.0/(doclength if normalised else 1)
+                
+            tags[w] += 1.0/((1.0+(DISTANCE_WEIGHT*distance)) * (doclength if normalised else 1)) # weighting
+            
     for doc in docs:
-
         words = wordify(doc)
         doclength = float(len(words))
 
         for i, word in enumerate(words):
             w = word.lower().strip().strip(string.punctuation).strip()
+            
+            if w not in tags: #initialize
+                tags[w] = 1.0/(doclength if normalised else 1)           
+            
             if w == query_word:
-                for x in range( 1, NUM_ADJ_WORDS+1 ):
-                    w = words[i-x] # left of query
-                    if w not in stop:
-                        if w in tags:
-                            tags[w] += 1.0/((1.0+(DISTANCE_WEIGHT*x)) * (doclength if normalised else 1)) # weighting
-                        else:
-                            tags[w] = 1.0/(doclength if normalised else 1)
-
-                    w = words[min(i+x,len(words)-1)] # right of query
-                    if w not in stop:
-                        if w in tags:
-                            tags[w] += 1.0/((1.0+(DISTANCE_WEIGHT*x)) * (doclength if normalised else 1)) # weighting
-                        else:
-                            tags[w] = 1.0/(doclength if normalised else 1)
+                # update words nearby
+                left_of = words[max(0, i - NUM_ADJ_WORDS): i]
+                right_of = words[i: min(i - NUM_ADJ_WORDS, len(words))]
+                
+                _update_distance(left_of)
+                _update_distance(right_of)
 
     return dict(sorted(tags.iteritems(), key=operator.itemgetter(1), reverse=True)[:NUM_WORDS_TO_RETURN])
 

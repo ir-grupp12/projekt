@@ -32,12 +32,17 @@ def fetch(query, limit=3, wikisum=True):
                     #~ print i, "Done"
                     queue.task_done()
                     break
+                except DisambiguationError as de:
+                    # Fetch the first suggestion (maybe fetch all instead?)
+                    results[i] = (de.options[0].title(), wikipedia.page(de.options[0].title()).content)
+                    break
                 except Exception as ex:
                     print ex
                     pass
             if not results[i]:
                 raise Exception("5 consequtive errors occured while fetching page.")
                 
+            print "in loop"
                 
     
     for _ in range(num_worker_threads):
@@ -49,14 +54,3 @@ def fetch(query, limit=3, wikisum=True):
     print "Performance: ", str(num_worker_threads)+" threads" 
     print "Time taken:", str(time.time() - begin)+" sec"
     return results
-    
-def _fetch_page(meta):
-    try:
-        page = wikipedia.page(title=meta.title())
-    except DisambiguationError as e:
-        # Only get the first disambiguation option for now
-        page = wikipedia.page(title=e.options[0].title())
-    return page
-
-
-

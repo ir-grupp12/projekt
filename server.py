@@ -104,7 +104,7 @@ def make_context(docs, query, normalised=False, NUM_ADJ_WORDS = 10):
         distance = 0
         for w in words: 
             distance += 1           
-            if w in stop:
+            if w in stop or w in query_word:
                 continue
                 
             if w not in tags: #initialize (because of lookahead)
@@ -119,12 +119,13 @@ def make_context(docs, query, normalised=False, NUM_ADJ_WORDS = 10):
         for i, word in enumerate(words):
             w = word.lower().strip().strip(string.punctuation).strip()
             
-            if w == "" or w in stop or w in query_word:
+            if w == "" or w in stop:
                 continue
-            if w not in tags: #initialize
+                
+            if w not in tags and w not in query_word: #initialize
                 tags[w] = 1.0/(doclength if normalised else 1)           
             
-            if w == query_word:
+            if w in query_word:
                 # update words nearby
                 left_of = words[max(0, i - NUM_ADJ_WORDS): i]
                 right_of = words[i: min(i - NUM_ADJ_WORDS, len(words))]

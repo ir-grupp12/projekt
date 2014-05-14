@@ -35,6 +35,10 @@ def wordcloud():
         dist = min(200, int(request.args.get("dist")))
 
     query = request.args.get("query")
+
+    if query.strip() == "":
+        return hello()
+    
     results = wikifetcher.fetch(query, limit)
 
     docs = [doc for title, doc in results]

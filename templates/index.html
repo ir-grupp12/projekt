@@ -76,7 +76,7 @@
 			if(input[0].type == "checkbox")
 				input[0].checked = true;
 			if(input[0].type == "text")
-				input[0].value = val;
+				input[0].value = decodeURIComponent(val.replace("+", " "));
 			if(input[0].type == "number")
 				input[0].value = val;
 		}

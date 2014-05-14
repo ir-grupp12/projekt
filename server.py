@@ -119,6 +119,8 @@ def make_context(docs, query, normalised=False, NUM_ADJ_WORDS = 10):
         for i, word in enumerate(words):
             w = word.lower().strip().strip(string.punctuation).strip()
             
+            if w == "" or w in stop or w in query_words:
+                continue
             if w not in tags: #initialize
                 tags[w] = 1.0/(doclength if normalised else 1)           
             

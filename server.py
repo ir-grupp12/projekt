@@ -22,6 +22,7 @@ def wordcloud():
     wikisum = False
     context = False
     limit = 3
+    dist = 10
 
     # Set the search result limit using the limit parameter
     if request.args.has_key("limit"):
@@ -29,6 +30,9 @@ def wordcloud():
 
     if request.args.has_key("context"):
         context = request.args.get("context") == "on"
+        
+    if request.args.has_key("dist"):
+        dist = min(200, int(request.args.get("dist")))
 
     query = request.args.get("query")
     results = wikifetcher.fetch(query, limit)
@@ -36,7 +40,7 @@ def wordcloud():
     docs = [doc for title, doc in results]
 
     if context:
-        tags = make_context(docs, query, normalised=request.args.has_key("norm"))
+        tags = make_context(docs, query, normalised=request.args.has_key("norm"), NUM_ADJ_WORDS=dist)
     else:
         tags = make_tags(docs, query, normalised=request.args.has_key("norm"))
 
@@ -81,9 +85,7 @@ def make_tags(docs, query, normalised=False):
     
 
 
-def make_context(docs, query, normalised=False):
-    # number of adjacent words on each side to extract
-    NUM_ADJ_WORDS = 10
+def make_context(docs, query, normalised=False, NUM_ADJ_WORDS = 10):
     # how much weight to give proximity
     DISTANCE_WEIGHT = 3.0
     # specifies length of data to return

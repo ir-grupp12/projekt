@@ -4,7 +4,7 @@
 	<title>Wikipedia Wordcloud Search</title>
 	<meta name="viewport" content="width=1200, user-scalable=no">
 	<link rel="stylesheet" href="/static/css/pure-min.css">
-	<link rel="stylesheet" href="/static/css/style.css">
+	<link rel="stylesheet" href="/static/css/style.css">	
 {% endblock %}
 </head>
 <body>
@@ -31,7 +31,13 @@
 						<label for="norm_checkbox">
 							<input type="checkbox" name="norm" id="norm_checkbox">
 							Normalise
-						</label>						
+						</label>	
+						<br />		
+						
+						<label for="dist">
+							Adjacency distance:
+							<input type="number" name="dist" id="dist_range" min="1" max="200" value="10">
+						</label>
 					</fieldset>	
 				</form>
 			</div>
@@ -61,6 +67,8 @@
 			if(input[0].type == "checkbox")
 				input[0].checked = true;
 			if(input[0].type == "text")
+				input[0].value = val;
+			if(input[0].type == "number")
 				input[0].value = val;
 		}
 	}

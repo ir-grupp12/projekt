@@ -15,7 +15,6 @@
 {% endblock %}
 
 {% block footer %}
-	<div id="debug_output"></div>
 
 	<script type="text/javascript">
 		size = 1200;
@@ -38,12 +37,7 @@
 		words = [];
 		for(p in a) {
 			words.push({text: p, size: fontSize(a[p]) , fill: "#FF0000"});
-			{% if debug %}
-			var div = document.getElementById("debug_output");
-			var text = document.createElement("p");
-			text.appendChild(document.createTextNode(p + " has score " + a[p]));
-			div.appendChild(text); // + p + " " + a[p] + "</p>");
-			{% endif %}
+			console.log(p + " has score " + a[p]);
 		}
 
 		var greyscale = d3.scale.linear()

@@ -24,20 +24,26 @@
 		for(p in a) {
 			sum += a[p];
 		}		
-	
+		
+		// Normalize
+		for(p in a) {
+			a[p] /= sum;
+		}
+			
 		//~ Logarithmic sizes.
-		//~ var fontSize = d3.scale.log().range([10, 100]);
+		//~ var fontSize = d3.scale.log().range([1, size]);
 		//~ n
-		//~ var fontSize = d3.scale.linear().range([10, 100]);
+		var fontSize = d3.scale.linear().range([10, size / 8 * 7 ]);
 		//~ Old func
-		var fontSize =  function(value) { 
-			return (value / sum) * size*2;
-		};
+		//~ var fontSize =  function(value) { 
+			//~ return (value / sum) * size*2;
+		//~ };
 		
 		words = [];
-		for(p in a) {
+		for(p in a) {			
 			words.push({text: p, size: fontSize(a[p]) , fill: "#FF0000"});
 			console.log(p + " has score " + a[p]);
+			console.log(fontSize(a[p]));
 		}
 
 		var greyscale = d3.scale.linear()

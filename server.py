@@ -23,6 +23,7 @@ def wordcloud():
     context = False
     limit = 3
     dist = 10
+    numwords = 20
 
     # Set the search result limit using the limit parameter
     if request.args.has_key("limit"):
@@ -32,7 +33,11 @@ def wordcloud():
         context = request.args.get("context") == "on"
         
     if request.args.has_key("dist"):
-        dist = min(200, int(request.args.get("dist")))
+        dist = max(1,min(200, int(request.args.get("dist"))))
+
+    if request.args.has_key("numwords"):
+        numwords = max(1,min(200, int(request.args.get("numwords"))))
+
 
     query = request.args.get("query")
 
@@ -44,26 +49,22 @@ def wordcloud():
     docs = [doc for title, doc in results]
 
     if context:
-        tags = make_context(docs, query, normalised=request.args.has_key("norm"), NUM_ADJ_WORDS=dist)
+        tags = make_context(docs, query, normalised=request.args.has_key("norm"), NUM_ADJ_WORDS=dist, NUM_WORDS_TO_RETURN=numwords)
     else:
-        tags = make_tags(docs, query, normalised=request.args.has_key("norm"))
+        tags = make_tags(docs, query, normalised=request.args.has_key("norm"), NUM_WORDS_TO_RETURN=numwords)
 
     if request.args.has_key("debug"):
         for tag in tags:
             print "'"+tag+"' has score " + str(tags[tag])
 
     return render_template("wordcloud.html", tags=json.dumps(tags), debug=request.args.has_key("debug"))
-    #~ return jsonify(tags)
 
 # params:
 #        docs: an array of documents
 #        query: the search string
 # returns:
 #        tags: a dict of tags and rankings
-def make_tags(docs, query, normalised=False):
-    # specifies length of data to return
-    NUM_WORDS_TO_RETURN = 80
-    
+def make_tags(docs, query, normalised=False, NUM_WORDS_TO_RETURN = 80):   
     query_words = query.lower().strip()
     tags = dict()
     stop = stopwords.words("english")
@@ -80,21 +81,20 @@ def make_tags(docs, query, normalised=False):
             tags[w] += 1/(doclength if normalised else 1)
 
     sorted_tags = sorted(tags.iteritems(), key=operator.itemgetter(1), reverse=True)
+    
     tags = dict()
-    for i in xrange(NUM_WORDS_TO_RETURN):
-        if i >= len(sorted_tags):
+    for i in xrange(len(sorted_tags)):
+        if i >= NUM_WORDS_TO_RETURN:
             break
         tags[sorted_tags[i][0]] = sorted_tags[i][1]
+ 
     return tags
     
 
 
-def make_context(docs, query, normalised=False, NUM_ADJ_WORDS = 10):
+def make_context(docs, query, normalised=False, NUM_ADJ_WORDS = 10, NUM_WORDS_TO_RETURN = 80):
     # how much weight to give proximity
     DISTANCE_WEIGHT = 3.0
-    # specifies length of data to return
-    NUM_WORDS_TO_RETURN = 80
-
     query_word = query.lower().strip()
 
     stop = stopwords.words("english")
@@ -117,7 +117,7 @@ def make_context(docs, query, normalised=False, NUM_ADJ_WORDS = 10):
         doclength = float(len(words))
 
         for i, word in enumerate(words):
-            w = word.lower().strip().strip(string.punctuation).strip()
+            w = word.lower().strip().strip(string.punctuation).strip('\n\r\t ')
             
             if w == "" or w in stop:
                 continue
@@ -140,7 +140,7 @@ def make_context(docs, query, normalised=False, NUM_ADJ_WORDS = 10):
 #
 def wordify(doc):
         doc = doc.lower().replace("'s", "")
-        doc = re.sub(' +',' ',doc)
+        doc = re.sub('[\n\r\t ]+',' ',doc)
         doc = "".join(l for l in doc if l not in string.punctuation)
         return doc.split(" ")
 

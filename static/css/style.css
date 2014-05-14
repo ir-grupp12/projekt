@@ -37,3 +37,7 @@ body {
 	border: 0px;
 	width: 1200px;
 }
+
+#wordcloud {
+	margin-top: -150px;
+}

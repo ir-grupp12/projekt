@@ -110,7 +110,7 @@ def make_context(docs, query, normalised=False, NUM_ADJ_WORDS = 10):
             if w not in tags: #initialize (because of lookahead)
                 tags[w] = 1.0/(doclength if normalised else 1)
                 
-            tags[w] += 1.0/((1.0+(DISTANCE_WEIGHT*distance)) * (doclength if normalised else 1)) # weighting
+            tags[w] += (1.0/(DISTANCE_WEIGHT*distance) + (1.0/doclength if normalised else 0)) # weighting
             
     for doc in docs:
         words = wordify(doc)
